@@ -27,6 +27,12 @@ const servidor = http.createServer((req: any, res: any) => {
         return;
     }
 
+    if (url.pathname === "/despedida") {
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+        res.end(`See you later, alligator!`);
+        return;
+    }
+
 
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Ruta no encontrada");
