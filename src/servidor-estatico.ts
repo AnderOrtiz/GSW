@@ -24,4 +24,4 @@ const servidor = http.createServer((req: any, res: any) => {
     })
 });
 
-servidor.listen(3000, () => console.log("Escuchar en http://localhost:3000"));
+servidor.listen(3005, () => console.log("Escuchar en http://localhost:3005"));
