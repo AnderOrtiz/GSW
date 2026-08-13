@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pnpm exec tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node dist/servidor.js",
+    "dev": "pnpm exec tsc -w",
+    "restart": "sudo launchctl kickstart -k system/com.miapp.servidor"
   },
   "keywords": [],
   "author": "",
@@ -18,8 +22,12 @@
   },
   "type": "module",
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^26.1.1",
     "tsx": "^4.23.1",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
   }
 }
