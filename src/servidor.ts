@@ -1,10 +1,26 @@
 import express, { type Request, type Response } from "express";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
-const app = express();
-const PUERTO = 3000;
+const app = express(),
+    PUERTO = 3000,
+    limiter = rateLimit({
+        max: 5,
+        message: {
+            error: "Demaciadas solicitudes https",
+            mensaje: "Haz superado el limite esperate un momento para volde a probar"
+        },
+        statusCode: 429 //codigo http por defecto muchas deciciones 
+    });
 
 // Permite leer JSON enviado en el body de las peticiones POST
-app.use(express.json());
+app.use(express.json())
+app.use(limiter);
+app.use(helmet());
+app.use((err: Error, req: Request, res: Response, next: Function) => {
+    console.error(err); // esto si queda en el log , que solo ve el administrador
+    res.status(500).json({ error: "Ocurrio un error interno" });
+});
 
 app.get("/", (req: Request, res: Response) => {
     res.send(
@@ -36,10 +52,11 @@ app.get("/info", (req: Request, res: Response) => {
 
 // Ruta 3: cálculo dinámico -- total con IVA (13 %, El Salvador)
 app.get("/cotizacion", (req: Request, res: Response) => {
-    const monto = parseFloat((req.query.monto as string) ?? "0");
+    const montoRaw = req.query.monto as string;
+    const monto = Number(montoRaw);
 
-    if (isNaN(monto) || monto < 0) {
-        res.status(400).json({ error: "monto invalido" });
+    if (!montoRaw || isNaN(monto) || monto < 0 || monto > 1_000_000) {
+        res.status(400).json({ error: "Monto invalido" });
         return;
     }
 
@@ -81,6 +98,10 @@ app.get("/factorial", (req: Request, res: Response) => {
     });
 });
 
+
+
 app.listen(PUERTO, () => {
     console.log(`Escuchando en http://localhost:${PUERTO}`);
 });
+
+// TODO Entregar: código modificado + captura del mensaje de ”demasiadas peticiones” + breve
