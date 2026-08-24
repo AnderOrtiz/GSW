@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url),
 const servidor = http.createServer((req: any, res: any) => {
     const archivo = path.join(__dirname, "..", "public", "saludo.html")
 
-    fs.readFile(archivo, (error: any, contenido: any) => {
+    fs.readFile(archivo, (error: NodeJS.ErrnoException | null, contenido: Buffer<ArrayBuffer>) => {
         if (error) {
             res.writeHead(404, { "Content-Type": "text/plain" });
             res.end("Archivo no encontrado");
