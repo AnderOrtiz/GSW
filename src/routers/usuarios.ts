@@ -5,7 +5,7 @@ const router = Router();
 
 router.get("/:id", (req: Request, res: Response) => {
     const { id } = req.params;
-    res.json({ mensaje: `Usuario encontrado con el ID: ${id}` })
+    res.json({ mensaje: `Nuevo mensaje usuario encontrado con el ID: ${id}` })
 })
 
 export default router
