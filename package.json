@@ -1,24 +1,27 @@
 {
-  "name": "GSW",
+  "name": "gsw",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnderOrtiz/GSW.git"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.1.3",
-      "onFail": "download"
-    }
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AnderOrtiz/GSW/issues"
   },
-  "type": "module",
+  "homepage": "https://github.com/AnderOrtiz/GSW#readme",
   "devDependencies": {
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.6.3",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
 }
