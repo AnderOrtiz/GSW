@@ -69,5 +69,5 @@ async function analizarLog(rutaArchivo: string) {
 }
 
 // Ruta al archivo copiado en el Home (~) del sistema
-const rutaLog = path.join(os.homedir(), "log-ejemplo.txt");
+const rutaLog = path.join(os.homedir(), "Desktop", "Ciclo4", "GSW", "log-ejemplo.txt");
 analizarLog(rutaLog);

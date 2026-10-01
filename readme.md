@@ -1,17 +1,9 @@
+### Crear el archivo con los logs
 ```bash
-npx tsx src/benchmark.ts
+docker exec apache-clase21 cat /usr/local/apache2/logs/blog.local-ssl-access.log > ~/Desktop/Ciclo4/GSW/log-ejemplo.txt
 ```
 
-=== INICIANDO BENCHMARK (200 peticiones) ===
-
-Resultados para: http://localhost:9000/saludo?nombre=Bench
-  Promedio: 0.40 ms
-  Mínimo:   0.16 ms
-  Máximo:   22.19 ms
-  Éxitos:   200 / Fallos: 0
-
-Resultados para: http://blog.local:8090/api/saludo?nombre=Bench
-  Promedio: 0.73 ms
-  Mínimo:   0.47 ms
-  Máximo:   11.10 ms
-  Éxitos:   200 / Fallos: 0
+## Ejecutar analizador-logs.ts
+```bash
+npx tsx src/analizador-logs.ts
+```
