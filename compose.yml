@@ -1,0 +1,21 @@
+services:
+  apache-seguridad:
+    image: httpd:2.4
+    container_name: apache-clase21
+    ports:
+      - "8090:80"   # Redirección HTTP
+      - "443:443"   # HTTPS
+    volumes:
+      - ./www/blog.local:/usr/local/apache2/htdocs/blog.local
+      - ./ssl:/usr/local/apache2/conf/ssl:ro
+      - ./blog.local.conf:/usr/local/apache2/conf/extra/blog.local.conf:ro
+    command: >
+      sh -c "
+        sed -i 's/#LoadModule ssl_module/LoadModule ssl_module/' /usr/local/apache2/conf/httpd.conf &&
+        sed -i 's/#LoadModule socache_shmcb_module/LoadModule socache_shmcb_module/' /usr/local/apache2/conf/httpd.conf &&
+        echo 'Include conf/extra/blog.local.conf' >> /usr/local/apache2/conf/httpd.conf &&
+        httpd-foreground
+      "
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

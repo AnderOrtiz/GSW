@@ -42,3 +42,4 @@ build/
 .idea/
 
 mysql-db/
+ssl/*-key.pem
