@@ -1,13 +1,18 @@
 import * as fs from "fs";
 import * as readline from "readline";
 import * as path from "path";
-import * as os from "os";
+import { fileURLToPath } from "url";
 
 interface EstadisticasLog {
     totalPeticiones: number;
     porCodigo: Record<string, number>;
     ipsMasFrecuentes: Record<string, number>;
 }
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const rutaArchivo = process.argv[2] ?? path.join(__dirname, "..", "data", "log-ejemplo.txt");
 
 async function analizarLog(rutaArchivo: string) {
     const stats: EstadisticasLog = {
@@ -21,8 +26,7 @@ async function analizarLog(rutaArchivo: string) {
         return;
     }
 
-    const flujo = fs.createReadStream(rutaArchivo);
-    const lector = readline.createInterface({ input: flujo });
+    const lector = readline.createInterface({ input: fs.createReadStream(rutaArchivo) });
 
     // Expresión regular para extraer la IP y el código de estado HTTP
     const patron = /^(\S+) +.*? "[A-Z]+ .+? HTTP\/[\d.]+" (\d{3})/;
@@ -33,41 +37,32 @@ async function analizarLog(rutaArchivo: string) {
 
         const [, ip, codigo] = coincidencia;
 
-        stats.totalPeticiones++;
-        stats.porCodigo[codigo] = (stats.porCodigo[codigo] ?? 0) + 1;
-        stats.ipsMasFrecuentes[ip] = (stats.ipsMasFrecuentes[ip] ?? 0) + 1;
+
+        stats.porCodigo[codigo!] = (stats.porCodigo[codigo!] ?? 0) + 1;
+        stats.ipsMasFrecuentes[ip!] = (stats.ipsMasFrecuentes[ip!] ?? 0) + 1;
     }
 
-    // --- IMPRESIÓN DE RESULTADOS ---
-    console.log(`=== ANALIZADOR DE LOGS (CLASE 22) ===`);
-    console.log(`Total de peticiones procesadas: ${stats.totalPeticiones}`);
+    return stats;
+}
 
-    console.log("\nDesglose por Códigos de Estado:");
-    console.table(stats.porCodigo);
+async function main() {
+    const stats: EstadisticasLog = await analizarLog(rutaArchivo);
+    console.log(`Total de peticiones ${stats.totalPeticiones}`);
+    console.log(`Por código: ${stats.porCodigo}`);
 
-    // Reto adicional: Cálculo del porcentaje de peticiones exitosas (200)
-    const peticionesExitosas = stats.porCodigo["200"] ?? 0;
-    const porcentajeExito = stats.totalPeticiones > 0
-        ? ((peticionesExitosas / stats.totalPeticiones) * 100).toFixed(2)
-        : "0.00";
-    console.log(`Porcentaje de peticiones exitosas (HTTP 200): ${porcentajeExito}%`);
-
-    console.log("\nTop 5 IPs más frecuentes:");
-    const top5IPs = Object.entries(stats.ipsMasFrecuentes)
+    const top5 = Object.entries(stats.ipsMasFrecuentes)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
-    top5IPs.forEach(([ip, cantidad], index) => {
-        console.log(`  ${index + 1}. IP: ${ip} - ${cantidad} peticiones`);
-    });
+    console.log("Top 5 IPs: ")
+    for (const [ip, n] of top5) {
+        console.log(`${ip}: ${n}`)
+    }
 
-    // Alerta si existen errores 500
     const errores500 = stats.porCodigo["500"] ?? 0;
     if (errores500 > 0) {
-        console.log(`\n⚠️ ATENCIÓN: Se detectaron ${errores500} errores internos (HTTP 500).`);
+        console.log(`Atención: ${errores500} errores 500`);
     }
-}
 
-// Ruta al archivo copiado en el Home (~) del sistema
-const rutaLog = path.join(os.homedir(), "Desktop", "Ciclo4", "GSW", "log-ejemplo.txt");
-analizarLog(rutaLog);
+
+}
