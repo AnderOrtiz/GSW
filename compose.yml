@@ -3,17 +3,22 @@ services:
     image: httpd:2.4
     container_name: apache-clase21
     ports:
-      - "8090:80"   # Redirección HTTP
-      - "443:443"   # HTTPS
+      - "8090:80"   # HTTP secundario / Mapeos
+      - "443:443"   # HTTPS principal
     volumes:
       - ./www/blog.local:/usr/local/apache2/htdocs/blog.local
+      - ./www/sitio2.local:/usr/local/apache2/htdocs/sitio2.local
       - ./ssl:/usr/local/apache2/conf/ssl:ro
       - ./blog.local.conf:/usr/local/apache2/conf/extra/blog.local.conf:ro
+      - ./sitio2.local.conf:/usr/local/apache2/conf/extra/sitio2.local.conf:ro
     command: >
       sh -c "
         sed -i 's/#LoadModule ssl_module/LoadModule ssl_module/' /usr/local/apache2/conf/httpd.conf &&
         sed -i 's/#LoadModule socache_shmcb_module/LoadModule socache_shmcb_module/' /usr/local/apache2/conf/httpd.conf &&
-        echo 'Include conf/extra/blog.local.conf' >> /usr/local/apache2/conf/httpd.conf &&
+        sed -i 's/#LoadModule proxy_module/LoadModule proxy_module/' /usr/local/apache2/conf/httpd.conf &&
+        sed -i 's/#LoadModule proxy_http_module/LoadModule proxy_http_module/' /usr/local/apache2/conf/httpd.conf &&
+        grep -q 'Include conf/extra/blog.local.conf' /usr/local/apache2/conf/httpd.conf || echo 'Include conf/extra/blog.local.conf' >> /usr/local/apache2/conf/httpd.conf &&
+        grep -q 'Include conf/extra/sitio2.local.conf' /usr/local/apache2/conf/httpd.conf || echo 'Include conf/extra/sitio2.local.conf' >> /usr/local/apache2/conf/httpd.conf &&
         httpd-foreground
       "
     extra_hosts:

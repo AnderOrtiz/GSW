@@ -9,12 +9,12 @@ interface EstadisticasLog {
     ipsMasFrecuentes: Record<string, number>;
 }
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const rutaArchivo = process.argv[2] ?? path.join(__dirname, "..", "data", "log-ejemplo.txt");
 
-async function analizarLog(rutaArchivo: string) {
+async function analizarLog(rutaArchivo: string): Promise<EstadisticasLog> {
     const stats: EstadisticasLog = {
         totalPeticiones: 0,
         porCodigo: {},
@@ -23,7 +23,7 @@ async function analizarLog(rutaArchivo: string) {
 
     if (!fs.existsSync(rutaArchivo)) {
         console.error(`Error: El archivo ${rutaArchivo} no existe.`);
-        return;
+        return stats;
     }
 
     const lector = readline.createInterface({ input: fs.createReadStream(rutaArchivo) });
@@ -37,7 +37,7 @@ async function analizarLog(rutaArchivo: string) {
 
         const [, ip, codigo] = coincidencia;
 
-
+        stats.totalPeticiones++;
         stats.porCodigo[codigo!] = (stats.porCodigo[codigo!] ?? 0) + 1;
         stats.ipsMasFrecuentes[ip!] = (stats.ipsMasFrecuentes[ip!] ?? 0) + 1;
     }
@@ -46,23 +46,24 @@ async function analizarLog(rutaArchivo: string) {
 }
 
 async function main() {
-    const stats: EstadisticasLog = await analizarLog(rutaArchivo);
-    console.log(`Total de peticiones ${stats.totalPeticiones}`);
-    console.log(`Por código: ${stats.porCodigo}`);
+    const stats = await analizarLog(rutaArchivo);
+    console.log(`Total de peticiones: ${stats.totalPeticiones}`);
+    console.log("Por código de estado:");
+    console.table(stats.porCodigo);
 
     const top5 = Object.entries(stats.ipsMasFrecuentes)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
 
-    console.log("Top 5 IPs: ")
+    console.log("\nTop 5 IPs:");
     for (const [ip, n] of top5) {
-        console.log(`${ip}: ${n}`)
+        console.log(`${ip}: ${n}`);
     }
 
     const errores500 = stats.porCodigo["500"] ?? 0;
     if (errores500 > 0) {
-        console.log(`Atención: ${errores500} errores 500`);
+        console.log(`\nAtención: ${errores500} errores 500 detectados.`);
     }
-
-
 }
+
+main();
