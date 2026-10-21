@@ -28,6 +28,14 @@ app.get('/api/usuarios/:id', (req: Request, res: Response) => {
     });
 });
 
+app.get('/api/status', (req: Request, res: Response) => {
+    res.json({
+        estado: "Online",
+        mensaje: "¡El despliegue integrador con Express, TypeScript y el Servidor Web funciona con éxito!",
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Manejo de rutas no encontradas
 app.use((req: Request, res: Response) => {
     res.status(404).json({
