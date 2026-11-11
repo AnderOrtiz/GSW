@@ -1,21 +1,16 @@
 services:
-  apache-seguridad:
-    image: httpd:2.4
-    container_name: apache-clase21
+  minio-cloud-simulado:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: minio_s3_emulator
+    environment:
+      MINIO_ROOT_USER: "admin_cloud"
+      MINIO_ROOT_PASSWORD: "Password123!"
     ports:
-      - "8090:80"   # Redirección HTTP
-      - "443:443"   # HTTPS
+      - "9005:9000"   # Se cambia el puerto expuesto en el host a 9005
+      - "9001:9001"   # Puerto del Panel Web (Console)
+    command: server /data --console-address ":9001"
     volumes:
-      - ./www/blog.local:/usr/local/apache2/htdocs/blog.local
-      - ./ssl:/usr/local/apache2/conf/ssl:ro
-      - ./blog.local.conf:/usr/local/apache2/conf/extra/blog.local.conf:ro
-    command: >
-      sh -c "
-        sed -i 's/#LoadModule ssl_module/LoadModule ssl_module/' /usr/local/apache2/conf/httpd.conf &&
-        sed -i 's/#LoadModule socache_shmcb_module/LoadModule socache_shmcb_module/' /usr/local/apache2/conf/httpd.conf &&
-        echo 'Include conf/extra/blog.local.conf' >> /usr/local/apache2/conf/httpd.conf &&
-        httpd-foreground
-      "
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    restart: unless-stopped
+      - minio_data:/data
+
+volumes:
+  minio_data:

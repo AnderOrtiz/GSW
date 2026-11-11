@@ -1,40 +1,65 @@
-import express from 'express';
-import type { Request, Response } from 'express';
-import * as os from 'os';
+import express, { type Request, type Response } from 'express';
+import multer from 'multer';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 const app = express();
-// Debe ser 9000 para coincidir con la directiva ProxyPass de blog.local.conf
-const PORT = process.env.PORT || 9000;
+const PORT = 3000;
 
-app.use(express.json());
+// Configuración del almacenamiento temporal en memoria con Multer
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Ruta consumida a través del Reverse Proxy (https://blog.local/api/status)
-app.get('/status', (req: Request, res: Response) => {
-    res.json({
-        estado: 'Online',
-        mensaje: 'Conexión exitosa entre blog.local (Apache) y Express (9000)',
-        nodo: os.hostname(),
-        timestamp: new Date().toISOString()
-    });
+// Configuración del cliente AWS S3 apuntando a MinIO local
+const s3Client = new S3Client({
+    region: 'us-east-1',
+    endpoint: 'http://localhost:9000', // Apunta a la API local de MinIO
+    credentials: {
+        accessKeyId: 'admin_cloud',
+        secretAccessKey: 'Password123!'
+    },
+    forcePathStyle: true // Obligatorio para emuladores S3 locales como MinIO
 });
 
-// Endpoint de Health Check (https://blog.local/api/health)
-app.get('/health', (req: Request, res: Response) => {
-    if (req.query.simular === 'falla') {
-        return res.status(503).json({
-            estado: 'no saludable',
-            nodo: os.hostname(),
-            mensaje: 'Falla simulada'
+const BUCKET_NAME = 'mi-bucket-simulado';
+
+// Endpoint para subir un archivo a la nube simulada
+app.post('/api/upload', upload.single('archivo'), async (req: Request, res: Response) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No se ha adjuntado ningún archivo.' });
+        }
+
+        const params = {
+            Bucket: BUCKET_NAME,
+            Key: `${Date.now()}_${req.file.originalname}`,
+            Body: req.file.buffer,
+            ContentType: req.file.mimetype
+        };
+
+        // Enviar el archivo a MinIO
+        await s3Client.send(new PutObjectCommand(params));
+
+        const publicUrl = `http://localhost:9000/${BUCKET_NAME}/${params.Key}`;
+
+        return res.status(200).json({
+            mensaje: '¡Archivo subido exitosamente a la nube simulada!',
+            detalles: {
+                nombreOriginal: req.file.originalname,
+                bucket: BUCKET_NAME,
+                urlAcceso: publicUrl
+            }
+        });
+    } catch (error: any) {
+        console.error('Error detallado al subir:', error);
+        return res.status(500).json({
+            error: 'Fallo interno en el almacenamiento cloud.',
+            detalle: error.message || error
         });
     }
-
-    res.status(200).json({
-        estado: 'saludable',
-        nodo: os.hostname(),
-        timestamp: new Date().toISOString()
-    });
 });
 
 app.listen(PORT, () => {
-    console.log(`Backend de blog.local corriendo en http://localhost:${PORT}`);
+    console.log(`Backend de prueba escuchando en http://localhost:${PORT}`);
+    console.log(`Conectado exitosamente al emulador Cloud MinIO en el puerto 9000`);
 });
+
+// /Users/ander-ortiz/Desktop/Screenshot
