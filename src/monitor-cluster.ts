@@ -8,17 +8,17 @@ const nodosCluster: NodoCluster[] = [
     {
         nombre: "nodo1",
         ipPrivada: "172.28.0.11",
-        url: "http://127.0.0.1:9006"
+        url: "http://127.0.0.1:9005"
     },
     {
         nombre: "nodo2",
         ipPrivada: "172.28.0.12",
-        url: "http://nodo2:9000/health"
+        url: "http://127.0.0.1:9006"
     },
     {
         nombre: "nodo3",
         ipPrivada: "172.28.0.13",
-        url: "http://nodo3:9000/health"
+        url: "http://127.0.0.1:9007"
     }
 ]
 
